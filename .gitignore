@@ -3,3 +3,9 @@
 ################################################################################
 
 /.vs/QuickInspect/v15
+/packages
+/QuickInspect/bin/Debug
+/QuickInspect/obj/Debug
+/QuickInspect.Tests/bin/Debug
+/QuickInspect.Tests/obj/Debug
+*.user
