@@ -59,8 +59,10 @@
     <Compile Include="InspectorReportTests.cs" />
     <Compile Include="OneToManyTests.cs" />
     <Compile Include="NavigatorTests.cs" />
+    <Compile Include="ArrayTests.cs" />
     <Compile Include="Primitives\PrimitivesTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ÌgnoreTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

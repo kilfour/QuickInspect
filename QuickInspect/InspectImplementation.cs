@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using QuickInspect.NothingToSeeHereMoveAlong;
 
 namespace QuickInspect
 {
     public class InspectImplementation<T>
     {
+        private readonly List<PropertyInfo> StuffToIgnore = new List<PropertyInfo>();
+
         private readonly List<OneToOneRelation> oneToOneRelations =
             new List<OneToOneRelation>();
 
@@ -22,6 +25,12 @@ namespace QuickInspect
             this.left = left;
             this.right = right;
             RunReport = (b, m) => { };
+        }
+
+        public InspectImplementation<T> Ignore<TProperty>(Expression<Func<T, TProperty>> func)
+        {
+            StuffToIgnore.Add(func.AsPropertyInfo());
+            return this;
         }
 
         public Action<bool, string> RunReport { get; set; }
@@ -44,9 +53,9 @@ namespace QuickInspect
         private bool VerifyPrimitives(object leftHand, object rightHand)
         {
             var equal = true;
-            foreach (var propertyInfo in leftHand.GetType().GetProperties(MyBinding.Flags))
+            foreach (var propertyInfo in leftHand.GetType().GetProperties(MyBinding.Flags).Where(x => !StuffToIgnore.Contains(x)))
             {
-                if (IsAPrimitive(propertyInfo))
+                if (IsAPrimitive(propertyInfo.PropertyType))
                 {
                     equal = equal && VerifyEquality(propertyInfo, leftHand, rightHand, RunReport);
                 }
@@ -73,11 +82,23 @@ namespace QuickInspect
             var ix = 0;
             if (lefts.Count != rights.Count)
                 return false;
-            foreach (var leftMany in lefts)
+            if (IsAPrimitive(relation.Many))
             {
-                var rightMany = rights.ElementAt(ix);
-                equal = equal && AreMemberWiseEqual(leftMany, rightMany);
-                ix++;
+                foreach (var leftMany in lefts)
+                {
+                    var rightMany = rights.ElementAt(ix);
+                    equal = equal && Equals(leftMany, rightMany);
+                    ix++;
+                }
+            }
+            else
+            {
+                foreach (var leftMany in lefts)
+                {
+                    var rightMany = rights.ElementAt(ix);
+                    equal = equal && AreMemberWiseEqual(leftMany, rightMany);
+                    ix++;
+                }
             }
             return equal;
         }
@@ -119,15 +140,20 @@ namespace QuickInspect
             return equal;
         }
 
-        private bool IsAPrimitive(PropertyInfo propertyInfo)
+        
+
+        private bool IsAPrimitive(Type type)
         {
-            if (propertyInfo.PropertyType.Namespace == null)
+            if (type.Namespace == null)
                 return false;
 
-            if (propertyInfo.PropertyType.Namespace.StartsWith("System.Collections"))
+            if (type.Namespace.StartsWith("System.Collections"))
                 return false;
 
-            if (!propertyInfo.PropertyType.Namespace.StartsWith("System"))
+            if (!type.Namespace.StartsWith("System"))
+                return false;
+
+            if (type.BaseType == typeof(Array))
                 return false;
 
             return true;
