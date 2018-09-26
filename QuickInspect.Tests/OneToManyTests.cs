@@ -6,7 +6,7 @@ namespace QuickInspect.Tests
     public class OneToManyTests
     {
         [Fact]
-        public void AreMemberWiseEqual()
+        public void AreMemberWiseEqualOneChildEachTrue()
         {
             var thingOne =new Something{MySomethingElse = new List<SomethingElse>{new SomethingElse{MyProp = 42}}};
             var thingTwo = new Something { MySomethingElse = new List<SomethingElse> { new SomethingElse { MyProp = 42 } } };
@@ -15,7 +15,31 @@ namespace QuickInspect.Tests
                     .This(thingOne, thingTwo)
                     .Inspect<Something, SomethingElse>(s => s.MySomethingElse);
             Assert.True(inspector.AreMemberWiseEqual());
-            thingTwo.MySomethingElse[0].MyProp = 43;
+        }
+
+        [Fact]
+        public void AreMemberWiseEqualOneChildEachFalse()
+        {
+            var thingOne = new Something { MySomethingElse = new List<SomethingElse> { new SomethingElse { MyProp = 42 } } };
+            var thingTwo = new Something { MySomethingElse = new List<SomethingElse> { new SomethingElse { MyProp = 43 } } };
+            var inspector =
+                Inspect
+                    .This(thingOne, thingTwo)
+                    .Inspect<Something, SomethingElse>(s => s.MySomethingElse);
+
+            Assert.False(inspector.AreMemberWiseEqual());
+        }
+
+        [Fact]
+        public void AreMemberWiseEqualDifferentNumberOfChildrenFalse()
+        {
+            var thingOne = new Something { MySomethingElse = new List<SomethingElse> { new SomethingElse(), new SomethingElse() } };
+            var thingTwo = new Something { MySomethingElse = new List<SomethingElse> { new SomethingElse () } };
+            var inspector =
+                Inspect
+                    .This(thingOne, thingTwo)
+                    .Inspect<Something, SomethingElse>(s => s.MySomethingElse);
+
             Assert.False(inspector.AreMemberWiseEqual());
         }
 

@@ -71,6 +71,8 @@ namespace QuickInspect
             var lefts = relation.GetChildren(leftHand).ToList();
             var rights = relation.GetChildren(rightHand).ToList();
             var ix = 0;
+            if (lefts.Count != rights.Count)
+                return false;
             foreach (var leftMany in lefts)
             {
                 var rightMany = rights.ElementAt(ix);
